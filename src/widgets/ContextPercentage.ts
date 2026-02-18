@@ -6,7 +6,7 @@ import type {
     WidgetEditorDisplay,
     WidgetItem
 } from '../types/Widget';
-import { getContextConfig } from '../utils/model-context';
+import { calculateContextPercentage } from '../utils/context-percentage';
 
 export class ContextPercentageWidget implements Widget {
     getDefaultColor(): string { return 'blue'; }
@@ -48,24 +48,13 @@ export class ContextPercentageWidget implements Widget {
             return item.rawValue ? previewValue : `Ctx: ${previewValue}`;
         }
 
-        // Prefer context_window data from Claude Code (v2.0.65+)
-        if (context.contextWindow && context.contextWindow.contextWindowSize > 0) {
-            const usedPercentage = Math.min(100, (context.contextWindow.totalInputTokens / context.contextWindow.contextWindowSize) * 100);
-            const displayPercentage = isInverse ? (100 - usedPercentage) : usedPercentage;
-            return item.rawValue ? `${displayPercentage.toFixed(1)}%` : `Ctx: ${displayPercentage.toFixed(1)}%`;
+        if (!context.contextWindow && !context.tokenMetrics) {
+            return null;
         }
 
-        // Fall back to transcript-based metrics with model lookup
-        if (context.tokenMetrics) {
-            const model = context.data?.model;
-            const modelId = typeof model === 'string' ? model : model?.id;
-            const contextConfig = getContextConfig(modelId);
-            const usedPercentage = Math.min(100, (context.tokenMetrics.contextLength / contextConfig.maxTokens) * 100);
-            const displayPercentage = isInverse ? (100 - usedPercentage) : usedPercentage;
-            return item.rawValue ? `${displayPercentage.toFixed(1)}%` : `Ctx: ${displayPercentage.toFixed(1)}%`;
-        }
-
-        return null;
+        const usedPercentage = calculateContextPercentage(context);
+        const displayPercentage = isInverse ? (100 - usedPercentage) : usedPercentage;
+        return item.rawValue ? `${displayPercentage.toFixed(1)}%` : `Ctx: ${displayPercentage.toFixed(1)}%`;
     }
 
     getCustomKeybinds(): CustomKeybind[] {

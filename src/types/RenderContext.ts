@@ -8,7 +8,6 @@ export interface RenderContext {
     tokenMetrics?: TokenMetrics | null;
     contextWindow?: {
         totalInputTokens: number;
-        totalOutputTokens: number;
         contextWindowSize: number;
     } | null;
     sessionDuration?: string | null;

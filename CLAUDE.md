@@ -70,9 +70,8 @@ The project has dual runtime compatibility - works with both Bun and Node.js:
 - **colors.ts**: Color definitions and ANSI code mapping
 - **model-context.ts**: Model-to-context-window mapping
   - Maps model IDs to their context window sizes based on [1m] suffix
-  - Sonnet 4.5 WITH [1m] suffix: 1M tokens (800k usable at 80%) - requires long context beta access
-  - Sonnet 4.5 WITHOUT [1m] suffix: 200k tokens (160k usable at 80%)
-  - Legacy models: 200k tokens (160k usable at 80%)
+  - ANY model WITH [1m] suffix: 1M tokens (800k usable at 80%) - requires long context beta access
+  - Models WITHOUT [1m] suffix: 200k tokens (160k usable at 80%)
 
 ### Widgets (src/widgets/)
 Custom widgets implementing the Widget interface defined in src/types/Widget.ts:
@@ -99,7 +98,7 @@ All widgets must implement:
 - Model, Version, OutputStyle - Claude Code metadata display
 - GitBranch, GitChanges, GitWorktree - Git repository status
 - TokensInput, TokensOutput, TokensCached, TokensTotal - Token usage metrics
-- ContextLength, ContextPercentage, ContextPercentageUsable - Context window metrics (uses dynamic model-based context windows: 1M for Sonnet 4.5 with [1m] suffix, 200k for all other models)
+- ContextLength, ContextPercentage, ContextPercentageUsable - Context window metrics (prefers native context_window data from Claude Code v2.0.65+; falls back to model-based context windows: 1M for any model with [1m] suffix, 200k for all other models)
 - BlockTimer, SessionClock, SessionCost - Time and cost tracking
 - CurrentWorkingDir, TerminalWidth - Environment info
 - CustomText, CustomCommand - User-defined widgets
@@ -114,6 +113,9 @@ All widgets must implement:
 - **Powerline mode**: Optional Powerline-style rendering with arrow separators
 - **Custom commands**: Execute shell commands and display output in status line
 - **Mergeable items**: Items can be merged together with or without padding
+- **Session duration**: Uses `cost.total_duration_ms` from Claude Code input when available; falls back to transcript timestamp parsing
+- **jsonl.ts**: JSONL transcript parsing for token metrics and session duration
+  - `formatDurationMs()`: Formats duration in milliseconds to human-readable string (e.g. "1hr 30m")
 
 ## Bun Usage Preferences
 

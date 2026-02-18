@@ -53,7 +53,7 @@ describe('ContextPercentageWidget', () => {
             const context: RenderContext = {
                 data: { model: { id: 'claude-sonnet-4-6' } },
                 tokenMetrics: { inputTokens: 0, outputTokens: 0, cachedTokens: 0, totalTokens: 0, contextLength: 50000 },
-                contextWindow: { totalInputTokens: 100000, totalOutputTokens: 5000, contextWindowSize: 200000 }
+                contextWindow: { totalInputTokens: 100000, contextWindowSize: 200000 }
             };
             const result = widget.render(item, context, DEFAULT_SETTINGS);
             expect(result).toBe('Ctx: 50.0%'); // 100000/200000
@@ -65,7 +65,7 @@ describe('ContextPercentageWidget', () => {
             const context: RenderContext = {
                 data: { model: { id: 'claude-sonnet-4-6[1m]' } },
                 tokenMetrics: { inputTokens: 0, outputTokens: 0, cachedTokens: 0, totalTokens: 0, contextLength: 100000 },
-                contextWindow: { totalInputTokens: 100000, totalOutputTokens: 5000, contextWindowSize: 1000000 }
+                contextWindow: { totalInputTokens: 100000, contextWindowSize: 1000000 }
             };
             const result = widget.render(item, context, DEFAULT_SETTINGS);
             expect(result).toBe('Ctx: 10.0%'); // 100000/1000000

@@ -27,7 +27,12 @@ export const StatusJSONSchema = z.looseObject({
     }).optional(),
     context_window: z.looseObject({
         total_input_tokens: z.number().optional(),
-        context_window_size: z.number().optional()
+        context_window_size: z.number().optional(),
+        current_usage: z.looseObject({
+            input_tokens: z.number().optional(),
+            cache_creation_input_tokens: z.number().optional(),
+            cache_read_input_tokens: z.number().optional()
+        }).optional()
     }).optional()
 });
 

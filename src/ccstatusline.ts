@@ -96,8 +96,13 @@ async function renderMultipleLines(data: StatusJSON) {
     }
 
     // Map context_window from Claude Code input (v2.0.65+)
+    // Prefer current_usage (actual context occupancy) over total_input_tokens (cumulative billing cost)
     const contextWindow = data.context_window ? {
-        totalInputTokens: data.context_window.total_input_tokens ?? 0,
+        totalInputTokens: data.context_window.current_usage
+            ? (data.context_window.current_usage.input_tokens ?? 0)
+                + (data.context_window.current_usage.cache_creation_input_tokens ?? 0)
+                + (data.context_window.current_usage.cache_read_input_tokens ?? 0)
+            : data.context_window.total_input_tokens ?? 0,
         contextWindowSize: data.context_window.context_window_size ?? 0
     } : null;
 

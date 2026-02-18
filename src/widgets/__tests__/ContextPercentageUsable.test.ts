@@ -53,7 +53,7 @@ describe('ContextPercentageUsableWidget', () => {
             const context: RenderContext = {
                 data: { model: { id: 'claude-sonnet-4-6' } },
                 tokenMetrics: { inputTokens: 0, outputTokens: 0, cachedTokens: 0, totalTokens: 0, contextLength: 50000 },
-                contextWindow: { totalInputTokens: 80000, totalOutputTokens: 5000, contextWindowSize: 200000 }
+                contextWindow: { totalInputTokens: 80000, contextWindowSize: 200000 }
             };
             const result = widget.render(item, context, DEFAULT_SETTINGS);
             expect(result).toBe('Ctx(u): 50.0%'); // 80000/(200000*0.8)

@@ -47,7 +47,7 @@ describe('calculateContextPercentage', () => {
             const context: RenderContext = {
                 data: { model: { id: 'claude-sonnet-4-6' } },
                 tokenMetrics: { inputTokens: 0, outputTokens: 0, cachedTokens: 0, totalTokens: 0, contextLength: 50000 },
-                contextWindow: { totalInputTokens: 100000, totalOutputTokens: 5000, contextWindowSize: 200000 }
+                contextWindow: { totalInputTokens: 100000, contextWindowSize: 200000 }
             };
             expect(calculateContextPercentage(context)).toBeCloseTo(50.0);
         });

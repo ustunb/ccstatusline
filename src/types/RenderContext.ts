@@ -6,6 +6,11 @@ import type { TokenMetrics } from './TokenMetrics';
 export interface RenderContext {
     data?: StatusJSON;
     tokenMetrics?: TokenMetrics | null;
+    contextWindow?: {
+        totalInputTokens: number;
+        totalOutputTokens: number;
+        contextWindowSize: number;
+    } | null;
     sessionDuration?: string | null;
     blockMetrics?: BlockMetrics | null;
     terminalWidth?: number | null;

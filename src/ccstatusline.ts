@@ -15,6 +15,7 @@ import {
     saveSettings
 } from './utils/config';
 import {
+    formatDurationMs,
     getBlockMetrics,
     getSessionDuration,
     getTokenMetrics
@@ -81,8 +82,12 @@ async function renderMultipleLines(data: StatusJSON) {
     }
 
     let sessionDuration: string | null = null;
-    if (hasSessionClock && data.transcript_path) {
-        sessionDuration = await getSessionDuration(data.transcript_path);
+    if (hasSessionClock) {
+        if (data.cost?.total_duration_ms !== undefined) {
+            sessionDuration = formatDurationMs(data.cost.total_duration_ms);
+        } else if (data.transcript_path) {
+            sessionDuration = await getSessionDuration(data.transcript_path);
+        }
     }
 
     let blockMetrics: BlockMetrics | null = null;

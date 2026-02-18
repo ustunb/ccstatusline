@@ -16,6 +16,28 @@ const readFile = promisify(fs.readFile);
 const readFileSync = fs.readFileSync;
 const statSync = fs.statSync;
 
+/**
+ * Formats a duration in milliseconds to a human-readable string (e.g. "1hr 30m", "5m", "<1m")
+ */
+export function formatDurationMs(durationMs: number): string {
+    const totalMinutes = Math.floor(durationMs / (1000 * 60));
+
+    if (totalMinutes < 1) {
+        return '<1m';
+    }
+
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    if (hours === 0) {
+        return `${minutes}m`;
+    } else if (minutes === 0) {
+        return `${hours}hr`;
+    } else {
+        return `${hours}hr ${minutes}m`;
+    }
+}
+
 export async function getSessionDuration(transcriptPath: string): Promise<string | null> {
     try {
         if (!fs.existsSync(transcriptPath)) {
@@ -65,23 +87,7 @@ export async function getSessionDuration(transcriptPath: string): Promise<string
         // Calculate duration in milliseconds
         const durationMs = lastTimestamp.getTime() - firstTimestamp.getTime();
 
-        // Convert to minutes
-        const totalMinutes = Math.floor(durationMs / (1000 * 60));
-
-        if (totalMinutes < 1) {
-            return '<1m';
-        }
-
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = totalMinutes % 60;
-
-        if (hours === 0) {
-            return `${minutes}m`;
-        } else if (minutes === 0) {
-            return `${hours}hr`;
-        } else {
-            return `${hours}hr ${minutes}m`;
-        }
+        return formatDurationMs(durationMs);
     } catch {
         return null;
     }

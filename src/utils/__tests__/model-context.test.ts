@@ -32,6 +32,38 @@ describe('getContextConfig', () => {
         });
     });
 
+    describe('Other models with [1m] suffix', () => {
+        it('should return 1M config for Sonnet 4.6 with [1m] suffix', () => {
+            const config = getContextConfig('claude-sonnet-4-6-20260101[1m]');
+            expect(config.maxTokens).toBe(1000000);
+            expect(config.usableTokens).toBe(800000);
+        });
+
+        it('should return 1M config for Opus 4.6 with [1m] suffix', () => {
+            const config = getContextConfig('claude-opus-4-6-20260101[1m]');
+            expect(config.maxTokens).toBe(1000000);
+            expect(config.usableTokens).toBe(800000);
+        });
+
+        it('should return 1M config for Bedrock Sonnet 4.6 with [1m] suffix', () => {
+            const config = getContextConfig('us.anthropic.claude-sonnet-4-6-v1:0[1m]');
+            expect(config.maxTokens).toBe(1000000);
+            expect(config.usableTokens).toBe(800000);
+        });
+
+        it('should return 1M config for any model with [1m] suffix', () => {
+            const config = getContextConfig('some-future-model-id[1m]');
+            expect(config.maxTokens).toBe(1000000);
+            expect(config.usableTokens).toBe(800000);
+        });
+
+        it('should handle [1M] uppercase suffix for non-Sonnet-4.5 models', () => {
+            const config = getContextConfig('claude-sonnet-4-6[1M]');
+            expect(config.maxTokens).toBe(1000000);
+            expect(config.usableTokens).toBe(800000);
+        });
+    });
+
     describe('Sonnet 4.5 models without [1m] suffix', () => {
         it('should return 200k context window for claude-sonnet-4-5 without [1m] suffix', () => {
             const config = getContextConfig('claude-sonnet-4-5-20250929');

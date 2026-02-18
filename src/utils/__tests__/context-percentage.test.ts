@@ -42,6 +42,25 @@ describe('calculateContextPercentage', () => {
         });
     });
 
+    describe('with context_window data', () => {
+        it('should use context_window data when available', () => {
+            const context: RenderContext = {
+                data: { model: { id: 'claude-sonnet-4-6' } },
+                tokenMetrics: { inputTokens: 0, outputTokens: 0, cachedTokens: 0, totalTokens: 0, contextLength: 50000 },
+                contextWindow: { totalInputTokens: 100000, totalOutputTokens: 5000, contextWindowSize: 200000 }
+            };
+            expect(calculateContextPercentage(context)).toBeCloseTo(50.0);
+        });
+
+        it('should fall back to tokenMetrics when context_window is absent', () => {
+            const context: RenderContext = {
+                data: { model: { id: 'claude-sonnet-4-6' } },
+                tokenMetrics: { inputTokens: 0, outputTokens: 0, cachedTokens: 0, totalTokens: 0, contextLength: 50000 }
+            };
+            expect(calculateContextPercentage(context)).toBeCloseTo(25.0);
+        });
+    });
+
     describe('Older models with 200k context window', () => {
         it('should calculate percentage using 200k denominator', () => {
             const context: RenderContext = {

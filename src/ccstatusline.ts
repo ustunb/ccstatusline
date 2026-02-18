@@ -90,10 +90,18 @@ async function renderMultipleLines(data: StatusJSON) {
         blockMetrics = getBlockMetrics();
     }
 
+    // Map context_window from Claude Code input (v2.0.65+)
+    const contextWindow = data.context_window ? {
+        totalInputTokens: data.context_window.total_input_tokens ?? 0,
+        totalOutputTokens: data.context_window.total_output_tokens ?? 0,
+        contextWindowSize: data.context_window.context_window_size ?? 0
+    } : null;
+
     // Create render context
     const context: RenderContext = {
         data,
         tokenMetrics,
+        contextWindow,
         sessionDuration,
         blockMetrics,
         isPreview: false

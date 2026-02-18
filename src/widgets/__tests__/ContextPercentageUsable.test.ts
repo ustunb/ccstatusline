@@ -46,6 +46,31 @@ describe('ContextPercentageUsableWidget', () => {
         });
     });
 
+    describe('with context_window data (Claude Code v2.0.65+)', () => {
+        it('should use context_window data when available', () => {
+            const widget = new ContextPercentageUsableWidget();
+            const item: WidgetItem = { id: '1', type: 'context-percentage-usable' };
+            const context: RenderContext = {
+                data: { model: { id: 'claude-sonnet-4-6' } },
+                tokenMetrics: { inputTokens: 0, outputTokens: 0, cachedTokens: 0, totalTokens: 0, contextLength: 50000 },
+                contextWindow: { totalInputTokens: 80000, totalOutputTokens: 5000, contextWindowSize: 200000 }
+            };
+            const result = widget.render(item, context, DEFAULT_SETTINGS);
+            expect(result).toBe('Ctx(u): 50.0%'); // 80000/(200000*0.8)
+        });
+
+        it('should fall back to tokenMetrics when context_window is absent', () => {
+            const widget = new ContextPercentageUsableWidget();
+            const item: WidgetItem = { id: '1', type: 'context-percentage-usable' };
+            const context: RenderContext = {
+                data: { model: { id: 'claude-sonnet-4-6' } },
+                tokenMetrics: { inputTokens: 0, outputTokens: 0, cachedTokens: 0, totalTokens: 0, contextLength: 50000 }
+            };
+            const result = widget.render(item, context, DEFAULT_SETTINGS);
+            expect(result).toBe('Ctx(u): 31.3%'); // 50000/160000
+        });
+    });
+
     describe('Older models with 160k usable tokens', () => {
         it('should calculate percentage using 160k denominator for older Sonnet 3.5', () => {
             const result = render('claude-3-5-sonnet-20241022', 42000);

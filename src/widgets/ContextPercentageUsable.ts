@@ -46,7 +46,18 @@ export class ContextPercentageUsableWidget implements Widget {
         if (context.isPreview) {
             const previewValue = isInverse ? '88.4%' : '11.6%';
             return item.rawValue ? previewValue : `Ctx(u): ${previewValue}`;
-        } else if (context.tokenMetrics) {
+        }
+
+        // Prefer context_window data from Claude Code (v2.0.65+)
+        if (context.contextWindow && context.contextWindow.contextWindowSize > 0) {
+            const usableTokens = context.contextWindow.contextWindowSize * 0.8;
+            const usedPercentage = Math.min(100, (context.contextWindow.totalInputTokens / usableTokens) * 100);
+            const displayPercentage = isInverse ? (100 - usedPercentage) : usedPercentage;
+            return item.rawValue ? `${displayPercentage.toFixed(1)}%` : `Ctx(u): ${displayPercentage.toFixed(1)}%`;
+        }
+
+        // Fall back to transcript-based metrics with model lookup
+        if (context.tokenMetrics) {
             const model = context.data?.model;
             const modelId = typeof model === 'string' ? model : model?.id;
             const contextConfig = getContextConfig(modelId);
@@ -54,6 +65,7 @@ export class ContextPercentageUsableWidget implements Widget {
             const displayPercentage = isInverse ? (100 - usedPercentage) : usedPercentage;
             return item.rawValue ? `${displayPercentage.toFixed(1)}%` : `Ctx(u): ${displayPercentage.toFixed(1)}%`;
         }
+
         return null;
     }
 

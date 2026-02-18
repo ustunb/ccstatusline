@@ -18,9 +18,19 @@ export class ContextLengthWidget implements Widget {
     render(item: WidgetItem, context: RenderContext, settings: Settings): string | null {
         if (context.isPreview) {
             return item.rawValue ? '18.6k' : 'Ctx: 18.6k';
-        } else if (context.tokenMetrics) {
+        }
+
+        // Prefer context_window data from Claude Code (v2.0.65+)
+        if (context.contextWindow && context.contextWindow.contextWindowSize > 0) {
+            const tokens = context.contextWindow.totalInputTokens;
+            return item.rawValue ? formatTokens(tokens) : `Ctx: ${formatTokens(tokens)}`;
+        }
+
+        // Fall back to transcript-based metrics
+        if (context.tokenMetrics) {
             return item.rawValue ? formatTokens(context.tokenMetrics.contextLength) : `Ctx: ${formatTokens(context.tokenMetrics.contextLength)}`;
         }
+
         return null;
     }
 

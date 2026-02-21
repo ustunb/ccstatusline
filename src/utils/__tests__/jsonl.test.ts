@@ -1,8 +1,13 @@
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import {
     describe,
     expect,
     it
 } from 'vitest';
+
+import { getTokenMetrics } from '../jsonl';
 
 function createMockTimestamps(timestamps: string[]): string {
     return timestamps.map(ts => JSON.stringify({
@@ -260,5 +265,123 @@ describe('Block Detection Algorithm', () => {
             const result = findBlockStartTime('not json', new Date());
             expect(result).toBeNull();
         });
+    });
+});
+
+describe('getTokenMetrics - systemOverhead', () => {
+    function writeTempJsonl(lines: object[]): string {
+        const tmpFile = path.join(os.tmpdir(), `ccstatusline-test-${Date.now()}.jsonl`);
+        fs.writeFileSync(tmpFile, lines.map(l => JSON.stringify(l)).join('\n'));
+        return tmpFile;
+    }
+
+    it('should compute systemOverhead from first main-chain entry', async () => {
+        const tmpFile = writeTempJsonl([
+            {
+                timestamp: '2025-09-23T08:00:00.000Z',
+                message: {
+                    usage: {
+                        input_tokens: 500,
+                        output_tokens: 100,
+                        cache_read_input_tokens: 25000,
+                        cache_creation_input_tokens: 5000
+                    }
+                }
+            },
+            {
+                timestamp: '2025-09-23T08:05:00.000Z',
+                message: {
+                    usage: {
+                        input_tokens: 800,
+                        output_tokens: 200,
+                        cache_read_input_tokens: 30000,
+                        cache_creation_input_tokens: 0
+                    }
+                }
+            }
+        ]);
+
+        const metrics = await getTokenMetrics(tmpFile);
+        // First entry: 500 + 25000 + 5000 = 30500
+        expect(metrics.systemOverhead).toBe(30500);
+        fs.unlinkSync(tmpFile);
+    });
+
+    it('should skip sidechain entries for systemOverhead', async () => {
+        const tmpFile = writeTempJsonl([
+            {
+                timestamp: '2025-09-23T07:59:00.000Z',
+                isSidechain: true,
+                message: {
+                    usage: {
+                        input_tokens: 999,
+                        output_tokens: 50,
+                        cache_read_input_tokens: 0,
+                        cache_creation_input_tokens: 0
+                    }
+                }
+            },
+            {
+                timestamp: '2025-09-23T08:00:00.000Z',
+                message: {
+                    usage: {
+                        input_tokens: 400,
+                        output_tokens: 100,
+                        cache_read_input_tokens: 20000,
+                        cache_creation_input_tokens: 10000
+                    }
+                }
+            }
+        ]);
+
+        const metrics = await getTokenMetrics(tmpFile);
+        // Sidechain skipped; first main-chain: 400 + 20000 + 10000 = 30400
+        expect(metrics.systemOverhead).toBe(30400);
+        fs.unlinkSync(tmpFile);
+    });
+
+    it('should skip API error messages for systemOverhead', async () => {
+        const tmpFile = writeTempJsonl([
+            {
+                timestamp: '2025-09-23T08:00:00.000Z',
+                isApiErrorMessage: true,
+                message: {
+                    usage: {
+                        input_tokens: 0,
+                        output_tokens: 0
+                    }
+                }
+            },
+            {
+                timestamp: '2025-09-23T08:01:00.000Z',
+                message: {
+                    usage: {
+                        input_tokens: 300,
+                        output_tokens: 100,
+                        cache_read_input_tokens: 15000,
+                        cache_creation_input_tokens: 15000
+                    }
+                }
+            }
+        ]);
+
+        const metrics = await getTokenMetrics(tmpFile);
+        // Error message skipped; first valid: 300 + 15000 + 15000 = 30300
+        expect(metrics.systemOverhead).toBe(30300);
+        fs.unlinkSync(tmpFile);
+    });
+
+    it('should return 0 systemOverhead for empty transcript', async () => {
+        const tmpFile = writeTempJsonl([]);
+        fs.writeFileSync(tmpFile, '');
+
+        const metrics = await getTokenMetrics(tmpFile);
+        expect(metrics.systemOverhead).toBe(0);
+        fs.unlinkSync(tmpFile);
+    });
+
+    it('should return 0 systemOverhead for nonexistent file', async () => {
+        const metrics = await getTokenMetrics('/tmp/nonexistent-file-12345.jsonl');
+        expect(metrics.systemOverhead).toBe(0);
     });
 });

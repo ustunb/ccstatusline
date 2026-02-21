@@ -97,7 +97,7 @@ export async function getTokenMetrics(transcriptPath: string): Promise<TokenMetr
     try {
         // Use Node.js-compatible file reading
         if (!fs.existsSync(transcriptPath)) {
-            return { inputTokens: 0, outputTokens: 0, cachedTokens: 0, totalTokens: 0, contextLength: 0 };
+            return { inputTokens: 0, outputTokens: 0, cachedTokens: 0, totalTokens: 0, contextLength: 0, systemOverhead: 0 };
         }
 
         const content = await readFile(transcriptPath, 'utf-8');
@@ -111,6 +111,7 @@ export async function getTokenMetrics(transcriptPath: string): Promise<TokenMetr
         // Parse each line and sum up token usage for totals
         let mostRecentMainChainEntry: TranscriptLine | null = null;
         let mostRecentTimestamp: Date | null = null;
+        let firstMainChainUsage: TranscriptLine['message'] | null = null;
 
         for (const line of lines) {
             try {
@@ -124,6 +125,9 @@ export async function getTokenMetrics(transcriptPath: string): Promise<TokenMetr
                     // Track the most recent entry with isSidechain: false (or undefined, which defaults to main chain)
                     // Also skip API error messages (synthetic messages with 0 tokens)
                     if (data.isSidechain !== true && data.timestamp && !data.isApiErrorMessage) {
+                        // Track first main-chain entry for system overhead estimate
+                        firstMainChainUsage ??= data.message;
+
                         const entryTime = new Date(data.timestamp);
                         if (!mostRecentTimestamp || entryTime > mostRecentTimestamp) {
                             mostRecentTimestamp = entryTime;
@@ -146,9 +150,17 @@ export async function getTokenMetrics(transcriptPath: string): Promise<TokenMetr
 
         const totalTokens = inputTokens + outputTokens + cachedTokens;
 
-        return { inputTokens, outputTokens, cachedTokens, totalTokens, contextLength };
+        // System overhead: total input of the first main-chain API call (system prompt + CLAUDE.md + tool defs + first user message)
+        const firstUsage = firstMainChainUsage?.usage;
+        const systemOverhead = firstUsage
+            ? (firstUsage.input_tokens || 0)
+            + (firstUsage.cache_read_input_tokens ?? 0)
+            + (firstUsage.cache_creation_input_tokens ?? 0)
+            : 0;
+
+        return { inputTokens, outputTokens, cachedTokens, totalTokens, contextLength, systemOverhead };
     } catch {
-        return { inputTokens: 0, outputTokens: 0, cachedTokens: 0, totalTokens: 0, contextLength: 0 };
+        return { inputTokens: 0, outputTokens: 0, cachedTokens: 0, totalTokens: 0, contextLength: 0, systemOverhead: 0 };
     }
 }
 

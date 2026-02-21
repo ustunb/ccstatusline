@@ -17,7 +17,8 @@ describe('calculateContextPercentage', () => {
                     outputTokens: 0,
                     cachedTokens: 0,
                     totalTokens: 0,
-                    contextLength: 42000
+                    contextLength: 42000,
+                    systemOverhead: 0
                 }
             };
 
@@ -33,7 +34,8 @@ describe('calculateContextPercentage', () => {
                     outputTokens: 0,
                     cachedTokens: 0,
                     totalTokens: 0,
-                    contextLength: 2000000
+                    contextLength: 2000000,
+                    systemOverhead: 0
                 }
             };
 
@@ -46,7 +48,7 @@ describe('calculateContextPercentage', () => {
         it('should use context_window data when available', () => {
             const context: RenderContext = {
                 data: { model: { id: 'claude-sonnet-4-6' } },
-                tokenMetrics: { inputTokens: 0, outputTokens: 0, cachedTokens: 0, totalTokens: 0, contextLength: 50000 },
+                tokenMetrics: { inputTokens: 0, outputTokens: 0, cachedTokens: 0, totalTokens: 0, contextLength: 50000, systemOverhead: 0 },
                 contextWindow: { totalInputTokens: 100000, contextWindowSize: 200000 }
             };
             expect(calculateContextPercentage(context)).toBeCloseTo(50.0);
@@ -55,7 +57,7 @@ describe('calculateContextPercentage', () => {
         it('should fall back to tokenMetrics when context_window is absent', () => {
             const context: RenderContext = {
                 data: { model: { id: 'claude-sonnet-4-6' } },
-                tokenMetrics: { inputTokens: 0, outputTokens: 0, cachedTokens: 0, totalTokens: 0, contextLength: 50000 }
+                tokenMetrics: { inputTokens: 0, outputTokens: 0, cachedTokens: 0, totalTokens: 0, contextLength: 50000, systemOverhead: 0 }
             };
             expect(calculateContextPercentage(context)).toBeCloseTo(25.0);
         });
@@ -70,7 +72,8 @@ describe('calculateContextPercentage', () => {
                     outputTokens: 0,
                     cachedTokens: 0,
                     totalTokens: 0,
-                    contextLength: 42000
+                    contextLength: 42000,
+                    systemOverhead: 0
                 }
             };
 
@@ -92,7 +95,8 @@ describe('calculateContextPercentage', () => {
                     outputTokens: 0,
                     cachedTokens: 0,
                     totalTokens: 0,
-                    contextLength: 42000
+                    contextLength: 42000,
+                    systemOverhead: 0
                 }
             };
 

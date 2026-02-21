@@ -20,7 +20,8 @@ function render(modelId: string | undefined, contextLength: number, rawValue = f
             outputTokens: 0,
             cachedTokens: 0,
             totalTokens: 0,
-            contextLength
+            contextLength,
+            systemOverhead: 0
         }
     };
     const item: WidgetItem = {
@@ -52,7 +53,7 @@ describe('ContextPercentageWidget', () => {
             const item: WidgetItem = { id: '1', type: 'context-percentage' };
             const context: RenderContext = {
                 data: { model: { id: 'claude-sonnet-4-6' } },
-                tokenMetrics: { inputTokens: 0, outputTokens: 0, cachedTokens: 0, totalTokens: 0, contextLength: 50000 },
+                tokenMetrics: { inputTokens: 0, outputTokens: 0, cachedTokens: 0, totalTokens: 0, contextLength: 50000, systemOverhead: 0 },
                 contextWindow: { totalInputTokens: 100000, contextWindowSize: 200000 }
             };
             const result = widget.render(item, context, DEFAULT_SETTINGS);
@@ -64,7 +65,7 @@ describe('ContextPercentageWidget', () => {
             const item: WidgetItem = { id: '1', type: 'context-percentage' };
             const context: RenderContext = {
                 data: { model: { id: 'claude-sonnet-4-6[1m]' } },
-                tokenMetrics: { inputTokens: 0, outputTokens: 0, cachedTokens: 0, totalTokens: 0, contextLength: 100000 },
+                tokenMetrics: { inputTokens: 0, outputTokens: 0, cachedTokens: 0, totalTokens: 0, contextLength: 100000, systemOverhead: 0 },
                 contextWindow: { totalInputTokens: 100000, contextWindowSize: 1000000 }
             };
             const result = widget.render(item, context, DEFAULT_SETTINGS);
@@ -76,7 +77,7 @@ describe('ContextPercentageWidget', () => {
             const item: WidgetItem = { id: '1', type: 'context-percentage' };
             const context: RenderContext = {
                 data: { model: { id: 'claude-sonnet-4-6' } },
-                tokenMetrics: { inputTokens: 0, outputTokens: 0, cachedTokens: 0, totalTokens: 0, contextLength: 50000 }
+                tokenMetrics: { inputTokens: 0, outputTokens: 0, cachedTokens: 0, totalTokens: 0, contextLength: 50000, systemOverhead: 0 }
             };
             const result = widget.render(item, context, DEFAULT_SETTINGS);
             expect(result).toBe('Ctx: 25.0%'); // 50000/200000

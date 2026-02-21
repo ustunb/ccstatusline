@@ -4,6 +4,7 @@ import type {
     WidgetItemType
 } from '../types/Widget';
 import * as widgets from '../widgets';
+import { createSimpleWidget } from '../widgets/SimpleWidget';
 
 // Create widget registry
 const widgetRegistry = new Map<WidgetItemType, Widget>([
@@ -27,7 +28,68 @@ const widgetRegistry = new Map<WidgetItemType, Widget>([
     ['version', new widgets.VersionWidget()],
     ['custom-text', new widgets.CustomTextWidget()],
     ['custom-command', new widgets.CustomCommandWidget()],
-    ['claude-session-id', new widgets.ClaudeSessionIdWidget()]
+    ['claude-session-id', new widgets.ClaudeSessionIdWidget()],
+    // Last-API-call widgets (from context_window.current_usage in stdin JSON)
+    ['call-input', createSimpleWidget({
+        name: 'Call Input',
+        description: 'Last API call\'s non-cached input tokens',
+        label: 'CIn:',
+        previewValue: '500',
+        defaultColor: 'blue',
+        getValue: ctx => ctx.data?.context_window?.current_usage?.input_tokens ?? null
+    })],
+    ['call-output', createSimpleWidget({
+        name: 'Call Output',
+        description: 'Last API call\'s output tokens',
+        label: 'COut:',
+        previewValue: '1.2k',
+        defaultColor: 'green',
+        getValue: ctx => ctx.data?.context_window?.current_usage?.output_tokens ?? null
+    })],
+    ['call-cache-read', createSimpleWidget({
+        name: 'Call Cache Read',
+        description: 'Last API call\'s cache read tokens',
+        label: 'CCR:',
+        previewValue: '80k',
+        defaultColor: 'cyan',
+        getValue: ctx => ctx.data?.context_window?.current_usage?.cache_read_input_tokens ?? null
+    })],
+    ['call-cache-write', createSimpleWidget({
+        name: 'Call Cache Write',
+        description: 'Last API call\'s cache write tokens',
+        label: 'CCW:',
+        previewValue: '5k',
+        defaultColor: 'yellow',
+        getValue: ctx => ctx.data?.context_window?.current_usage?.cache_creation_input_tokens ?? null
+    })],
+    // Derived/computed widgets (from transcript JSONL)
+    ['context-tokens', createSimpleWidget({
+        name: 'Context Tokens',
+        description: 'Absolute context size in tokens (from transcript)',
+        label: 'Ctx:',
+        previewValue: '161k',
+        defaultColor: 'blue',
+        getValue: ctx => ctx.tokenMetrics?.contextLength ?? null
+    })],
+    ['system-overhead', createSimpleWidget({
+        name: 'System Overhead',
+        description: 'System prompt + CLAUDE.md + tool definitions (approximate)',
+        label: 'Sys:',
+        previewValue: '30k',
+        defaultColor: 'gray',
+        getValue: ctx => ctx.tokenMetrics?.systemOverhead ?? null
+    })],
+    ['conversation-content', createSimpleWidget({
+        name: 'Conversation Content',
+        description: 'Context added since session start (context minus system overhead)',
+        label: 'Conv:',
+        previewValue: '131k',
+        defaultColor: 'magenta',
+        getValue: (ctx) => {
+            const t = ctx.tokenMetrics;
+            return t ? Math.max(0, t.contextLength - t.systemOverhead) : null;
+        }
+    })]
 ]);
 
 export function getWidget(type: WidgetItemType): Widget | null {

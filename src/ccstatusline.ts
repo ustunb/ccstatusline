@@ -68,7 +68,7 @@ async function renderMultipleLines(data: StatusJSON) {
     const lines = settings.lines;
 
     // Get token metrics if needed (check all lines)
-    const hasTokenItems = lines.some(line => line.some(item => ['tokens-input', 'tokens-output', 'tokens-cached', 'tokens-total', 'context-length', 'context-percentage', 'context-percentage-usable'].includes(item.type)));
+    const hasTokenItems = lines.some(line => line.some(item => ['tokens-input', 'tokens-output', 'tokens-cached', 'tokens-total', 'context-length', 'context-percentage', 'context-percentage-usable', 'context-tokens', 'system-overhead', 'conversation-content'].includes(item.type)));
 
     // Check if session clock is needed
     const hasSessionClock = lines.some(line => line.some(item => item.type === 'session-clock'));
@@ -100,8 +100,8 @@ async function renderMultipleLines(data: StatusJSON) {
     const contextWindow = data.context_window ? {
         totalInputTokens: data.context_window.current_usage
             ? (data.context_window.current_usage.input_tokens ?? 0)
-                + (data.context_window.current_usage.cache_creation_input_tokens ?? 0)
-                + (data.context_window.current_usage.cache_read_input_tokens ?? 0)
+            + (data.context_window.current_usage.cache_creation_input_tokens ?? 0)
+            + (data.context_window.current_usage.cache_read_input_tokens ?? 0)
             : data.context_window.total_input_tokens ?? 0,
         contextWindowSize: data.context_window.context_window_size ?? 0
     } : null;

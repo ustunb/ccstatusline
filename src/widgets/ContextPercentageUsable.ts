@@ -53,7 +53,7 @@ export class ContextPercentageUsableWidget implements Widget {
             const usableTokens = context.contextWindow.contextWindowSize * 0.8;
             const usedPercentage = Math.min(100, (context.contextWindow.totalInputTokens / usableTokens) * 100);
             const displayPercentage = isInverse ? (100 - usedPercentage) : usedPercentage;
-            return item.rawValue ? `${displayPercentage.toFixed(1)}%` : `Ctx(u): ${displayPercentage.toFixed(1)}%`;
+            return item.rawValue ? `${displayPercentage.toFixed(0)}%` : `Ctx(u): ${displayPercentage.toFixed(0)}%`;
         }
 
         // Fall back to transcript-based metrics with model lookup
@@ -63,7 +63,7 @@ export class ContextPercentageUsableWidget implements Widget {
             const contextConfig = getContextConfig(modelId);
             const usedPercentage = Math.min(100, (context.tokenMetrics.contextLength / contextConfig.usableTokens) * 100);
             const displayPercentage = isInverse ? (100 - usedPercentage) : usedPercentage;
-            return item.rawValue ? `${displayPercentage.toFixed(1)}%` : `Ctx(u): ${displayPercentage.toFixed(1)}%`;
+            return item.rawValue ? `${displayPercentage.toFixed(0)}%` : `Ctx(u): ${displayPercentage.toFixed(0)}%`;
         }
 
         return null;
